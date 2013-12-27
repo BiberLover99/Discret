@@ -1,0 +1,97 @@
+public class Boruvka
+{
+    // private representations
+    /**
+     * Array of edges, which form the MST of the graph
+     */
+    private Edge[] mst;
+    /**
+     * Edges not yet discarded and not yet in the MST
+     */
+    private Edge[] wannabes;
+    /**
+     * Each component's nearest neighbor with find component numbers as indices
+     */
+    private Edge[] neighbors;
+    /**
+     * Graph representation on which we are searching for MST
+     */
+    private Graph g;
+    /**
+     *
+     */
+    private UnionFind uf;
+    // constructors and methods
+    /**
+     * constructor
+     * @param G Graph
+     */
+    public Boruvka(Graph G) {
+        this.g = G;
+    }
+    /**
+     * Boruvka's algorithm
+     *
+     *
+     * @return minimal spanning tree - edges that form it
+     */
+
+    public Edge[] BoruvkaMSTalg()
+    {
+        Edge hlpEdge = new Edge(g.getMaxWeight(), 0, 0);
+        this.uf = new UnionFind(g.getCountVerteces());
+        this.wannabes = new Edge[this.g.getCountEdges()];
+
+         /**
+         * Get all edges from the graph G to the array edges
+         */
+        for (int i=0; i < g.getCountEdges(); i++)
+            this.wannabes[i] = g.getEdgeAt(i);
+
+
+        this.neighbors = new Edge[this.g.getCountVerteces()];
+        this.mst = new Edge[this.g.getCountVerteces()+1];
+
+        /**
+         * index, used to store those edges being saved for the next phase
+         */
+        int nxtPhase;
+        int k=1;
+
+        for (int i=this.g.getCountEdges(); i!=0; i=nxtPhase)
+        {
+            int l, m, n;
+
+            for (int o=0; o<this.g.getCountVerteces(); o++)
+                this.neighbors[o] = hlpEdge;
+
+            for (n=0, nxtPhase=0; n<i; n++) {
+                Edge e = this.wannabes[n];
+                l = this.uf.find(e.getSVIndex()-1);
+                m = this.uf.find(e.getDVIndex()-1);
+
+                if ( l==m )
+                    continue;
+                if ( e.getWeight() < this.neighbors[l].getWeight() )
+                    this.neighbors[l] = e;
+                if ( e.getWeight() < this.neighbors[m].getWeight() )
+                    this.neighbors[m] = e;
+
+                this.wannabes[nxtPhase++] = e;
+            }
+
+            for (n=0; n<this.g.getCountVerteces(); n++)
+                if ( this.neighbors[n] != hlpEdge ) {
+                    l = this.neighbors[n].getSVIndex();
+                    m = this.neighbors[n].getDVIndex();
+
+                    if ( !this.uf.find(l,m) ) {
+                        this.uf.unite(l,m);
+                        this.mst[k++] = this.neighbors[n];
+                    }
+                }
+        }
+        System.out.println("MST by Boruvka successful");
+        return this.mst;
+    }
+}
